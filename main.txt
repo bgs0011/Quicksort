@@ -1,0 +1,425 @@
+#include <fstream>
+#include <iostream>
+#include <ctime>
+#include <string>
+using namespace std;
+
+class dataStructure {
+private:
+	string* wordArray;
+	string* finalWordArray;
+	int* count;
+	int length;
+	int finalLength;
+	int maxSize;
+
+public:
+	dataStructure();
+	~dataStructure();
+	void insert(string word);
+	int binarySearch(string word);
+	void printFinalWordArray();
+	void updateArrays();
+	int partition(int first, int last, bool isWord);
+	void swap(int first, int second, bool isWord);
+	void quickSort(int first, int last, bool isWord);
+	void Sort(bool isWord);
+	void Top10();
+	void removeAt(int location);
+	void Remove(string Item);
+};
+
+dataStructure::dataStructure() {
+	maxSize = 1400000;
+	length = 0;
+	finalLength = 0;
+
+	wordArray = new string[maxSize];
+	finalWordArray = new string[maxSize];
+	count = new int[maxSize];
+
+}
+
+dataStructure::~dataStructure() {
+	delete[] wordArray;
+	delete[] finalWordArray;
+	delete[] count;
+}
+
+void dataStructure::insert(string word) {
+	if (length == maxSize) {
+		cout << "Word array is full" << endl;
+	}
+	else {
+		wordArray[length] = word;
+		length++;
+	}
+}
+
+int dataStructure::binarySearch(string word) {
+	int first = 0;
+	int last = finalLength - 1;
+	int mid;
+	bool found = false;
+
+	while (first <= last && !found) {
+		mid = (first + last) / 2;
+		if (finalWordArray[mid] == word) {
+			found = true;
+		}
+
+		else if (finalWordArray[mid] > word) {
+			last = mid - 1;
+		}
+		else {
+			first = mid + 1;
+		}
+	}
+	if (found) {
+		return mid;
+	}
+	else {
+		return -1;
+	}
+	//hocam bu fonksiyonu ders kitabından aldık
+}
+
+void dataStructure::printFinalWordArray() {
+	for (int i = 0; i < finalLength; i++) {
+		cout << finalWordArray[i] << " " << count[i] << "  ";
+	}
+}
+
+bool searchStopWords(string s, string stopWordsArray[]) {
+	int first = 0;
+	int last = 571;
+	int mid;
+	bool found = false;
+
+	while (first <= last && !found) {
+		mid = (first + last) / 2;
+		if (stopWordsArray[mid] == s) {
+			found = true;
+		}
+		else if (stopWordsArray[mid] > s) {
+			last = mid - 1;
+		}
+		else {
+			first = mid + 1;
+		}
+	}
+	if (found) {
+		return true;
+	}
+	else {
+		return false;
+	}
+}
+
+void dataStructure::updateArrays() {
+	int b = 0;
+	int i = 0;
+	int j;
+	int minus = 0;
+
+	while (i < length) {
+		j = i + 1;
+		if (wordArray[i] == wordArray[j]) {
+			finalWordArray[b] = wordArray[i];
+
+			while (wordArray[i] == wordArray[j]) {
+				j++;
+			}
+			count[b] = j - i;
+			i = j;
+			b++;
+		}
+		else {
+			finalWordArray[b] = wordArray[i];
+			count[b] = 1;
+			b++;
+			i++;
+		}
+		minus = minus + count[b - 1] - 1;
+	}
+	length = 0;
+	finalLength = b;
+}
+
+void dataStructure::removeAt(int location) {
+	if (location < 0 || location >= finalLength) {
+		cout << "The location of the item to be removed is out of range" << endl;
+	}
+
+	else {
+		for (int i = location; i < finalLength - 1; i++) {
+			finalWordArray[i] = finalWordArray[i + 1];
+		}
+
+		for (int i = location; i < finalLength - 1; i++) {
+			count[i] = count[i + 1];
+		}
+		finalLength--;
+	}
+}
+
+void dataStructure::Remove(string Item) {
+	int location;
+
+	if (finalLength == 0) {
+		cout << "Cannot delete from an empty list." << endl;
+	}
+	else {
+		location = binarySearch(Item);
+
+		if (location != -1) {
+			removeAt(location);
+		}
+		else {
+			cout << "The item to be deleted is not in the list." << endl;
+		}
+	}
+}
+
+void dataStructure::Top10() {
+	for (int i = finalLength - 1; i > finalLength - 11; i--) {
+		cout << finalWordArray[i] << " " << count[i] << endl;
+	}
+}
+
+void dataStructure::swap(int first, int second, bool isWord) {
+	if (isWord) {
+		string temp;
+		temp = wordArray[first];
+		wordArray[first] = wordArray[second];
+		wordArray[second] = temp;
+	}
+	else {
+		string temp1 = finalWordArray[first];
+		finalWordArray[first] = finalWordArray[second];
+		finalWordArray[second] = temp1;
+
+		int temp;
+		temp = count[first];
+		count[first] = count[second];
+		count[second] = temp;
+	}
+}
+
+int dataStructure::partition(int first, int last, bool isWord) {
+	if (isWord) {
+		string pivot;
+		int index, smallIndex;
+		swap(first, (first + last) / 2, isWord);
+		pivot = wordArray[first];
+		smallIndex = first;
+		for (index = first + 1; index <= last; index++)
+			if (wordArray[index] < pivot)
+			{
+				smallIndex++;
+				swap(smallIndex, index, isWord);
+			}
+		swap(first, smallIndex, isWord);
+		return smallIndex;
+	}
+	else {
+		int pivot;
+		int index, smallIndex;
+		swap(first, (first + last) / 2, isWord);
+		pivot = count[first];
+		smallIndex = first;
+		for (index = first + 1; index <= last; index++)
+			if (count[index] < pivot)
+			{
+				smallIndex++;
+				swap(smallIndex, index, isWord);
+			}
+		swap(first, smallIndex, isWord);
+		return smallIndex;
+	}
+}
+
+void dataStructure::quickSort(int first, int last, bool isWord) {
+	if (first < last) {
+		int pivotLocation = partition(first, last, isWord);
+		quickSort(first, pivotLocation - 1, isWord);
+		quickSort(pivotLocation + 1, last, isWord);
+	}
+}
+
+void dataStructure::Sort(bool isWord) {
+	if (isWord) {
+		quickSort(0, length - 1, isWord);
+	}
+	else {
+		quickSort(0, finalLength - 1, isWord);
+	}
+}
+
+void readDocument(string file, string stopWordsArray[], dataStructure& d1) {
+	ifstream inputFile;
+
+	inputFile.open(file);
+
+	string tempStr = "";
+	string firstPart = "";
+	string lastPart = "";
+	string str;
+
+	inputFile >> str;
+
+	bool isBody = false;
+	bool isFirstPart = false;
+	bool isTrue = true;
+
+	while (!inputFile.eof()) {
+		inputFile >> str;
+
+		if (str == "<DATELINE>") {
+			while (str != "-") {
+				inputFile >> str;
+			}
+			inputFile >> str;
+			tempStr = "";
+			for (int i = 17; i < str.length(); i++) {
+				tempStr = tempStr + str[i];
+			}
+			str = tempStr;
+
+			isBody = true;
+		}
+
+		while (isBody) {
+			isFirstPart = false;
+			firstPart = "";
+			lastPart = "";
+
+			if (str == "Reuter" || str == "REUTER" || str == "rEUTER") {
+				isBody = false;
+			}
+
+			for (int i = 0, len = str.size(); i < len; i++) {
+				if (str[i] == '/' || str[i] == '-') {
+					firstPart = "";
+					lastPart = "";
+					for (int j = 0; j < i; j++) {
+						firstPart = firstPart + str[j];
+					}
+
+					isFirstPart = true;
+
+					for (int j = i; j < str.size() - 1; j++) {
+						lastPart = lastPart + str[j + 1];
+					}
+					str = lastPart;
+					i = 0;
+					len = str.size();
+
+				}
+				if (65 <= str[i] && str[i] <= 90) {
+					str[i] = str[i] + 32;
+				}
+
+				if (firstPart != "") {
+					if (i < firstPart.size()) {
+						if (65 <= firstPart[i] && firstPart[i] <= 90) {
+							firstPart[i] = firstPart[i] + 32;
+						}
+					}
+				}
+
+				if (str[i] < 0) {
+					str.erase(i, 1);
+					len = str.size();
+					if (i > 0) i--;
+				}
+				if (ispunct(str[i])) {
+					str.erase(i, 1);
+					len = str.size();
+					if (i > 0) i--;
+				}
+				if (97 <= str[i] && str[i] <= 122) {}
+				else { isTrue = false; }
+
+			}
+
+			bool shouldStop1 = searchStopWords(str, stopWordsArray);
+
+			if (str.size() != 0 && isTrue && !(shouldStop1)) {
+				d1.insert(str);
+			}
+
+			if (isFirstPart) {
+				bool shouldStop2 = searchStopWords(firstPart, stopWordsArray);
+				if (firstPart.size() != 0 && isTrue && !(shouldStop2)) {
+					d1.insert(firstPart);
+				}
+			}
+
+			isFirstPart = false;
+			isTrue = true;
+			inputFile >> str;
+
+		}
+
+	}
+	inputFile.close();
+}
+
+int main() {
+
+	clock_t startTime, endTime;
+	startTime = clock();
+
+	dataStructure d1;
+	string stopWordsArray[572];
+
+	ifstream stopFile;
+	string file;
+
+	stopFile.open("stopwords.txt");	
+
+	string stopW;
+
+	int count = 0;
+	while (!stopFile.eof()) {
+
+		stopFile >> stopW;
+
+		for (int i = 0, len = stopW.size(); i < len; i++) {
+			if (ispunct(stopW[i])) {
+				stopW.erase(i--, 1);
+				len = stopW.size();
+			}
+		}
+		stopWordsArray[count] = stopW;
+		count++;
+	}
+
+	cout << "Please wait for the output..." << endl << endl;
+
+	for (int i = 0; i <= 21; i++) {
+		if (i < 10) {
+			file = "reut2-00" + to_string(i) + ".sgm";
+		}
+		else {
+			file = "reut2-0" + to_string(i) + ".sgm";
+		}
+		readDocument(file, stopWordsArray, d1);
+
+	}
+
+	d1.Sort(true);
+
+	d1.updateArrays();
+
+	d1.Sort(false);
+
+	d1.Top10();
+
+	endTime = clock();
+
+	cout << endl << endl << "Total Elapsed Time: " << (float)(endTime - startTime) / CLOCKS_PER_SEC << " seconds." << endl;
+
+	return 0;
+}
